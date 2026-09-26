@@ -1,0 +1,821 @@
+MOVING AVERAGE SMOOTHING
+# ============================================================
+# PRACTICAL 1 : MOVING AVERAGE SMOOTHING
+# DATASET : AirPassengers
+# ============================================================
+
+# Install package if required
+# install.packages("forecast")
+
+library(forecast)
+
+data("AirPassengers")
+
+air <- AirPassengers
+
+print(air)
+
+plot(
+  air,
+  main = "Original AirPassengers Data",
+  xlab = "Year",
+  ylab = "Number of Passengers",
+  lwd = 2
+)
+
+# 3. 12-MONTH MOVING AVERAGE
+
+MA12 <- ma(
+  air,
+  order = 12
+)
+
+print(MA12)
+
+# Plot Moving Average
+plot(
+  air,
+  main = "12-Month Moving Average",
+  xlab = "Year",
+  ylab = "Passengers",
+  lwd = 2
+)
+lines(
+  MA12,
+  lwd = 2
+)
+
+CMA <- ma(
+  air,
+  order = 12,
+  centre = TRUE
+)
+
+print(CMA)
+
+# Plot Centered Moving Average
+plot(
+  air,
+  main = "Centered 12-Month Moving Average",
+  xlab = "Year",
+  ylab = "Passengers",
+  lwd = 2
+)
+
+lines(
+  CMA,
+  lwd = 2
+)
+seasonal_component <- air / CMA
+print(seasonal_component)
+
+# ------------------------------------------------------------
+# 6. COMPARE ORIGINAL AND SMOOTHED SERIES
+# ------------------------------------------------------------
+
+par(mfrow = c(2,1))
+
+plot(
+  air,
+  main = "Original AirPassengers",
+  ylab = "Passengers"
+)
+
+plot(
+  CMA,
+  main = "Centered Moving Average",
+  ylab = "Passengers"
+)
+
+par(mfrow = c(1,1))
+
+
+
+
+
+
+
+
+
+
+
+
+2.ARMA
+# ============================================================
+# PRACTICAL 2 : ARMA MODEL
+# DATASET : AirPassengers
+# ============================================================
+
+# Install packages if required
+# install.packages("forecast")
+# install.packages("tseries")
+
+library(forecast)
+library(tseries)
+
+# ------------------------------------------------------------
+# 1. LOAD DATASET
+# ------------------------------------------------------------
+
+data("AirPassengers")
+
+air <- AirPassengers
+
+print(air)
+
+# ------------------------------------------------------------
+# 2. ORIGINAL DATA PLOT
+# ------------------------------------------------------------
+
+plot(
+  air,
+  main = "Original AirPassengers",
+  xlab = "Year",
+  ylab = "Passengers",
+  lwd = 2
+)
+
+# ------------------------------------------------------------
+# 3. LOG TRANSFORMATION
+# ------------------------------------------------------------
+
+log_air <- log(air)
+
+plot(
+  log_air,
+  main = "Log Transformed AirPassengers",
+  xlab = "Year",
+  ylab = "Log(Passengers)",
+  lwd = 2
+)
+
+# ------------------------------------------------------------
+# 4. ADF TEST ON LOG SERIES
+# ------------------------------------------------------------
+
+cat("\n========== ADF TEST ON LOG SERIES ==========\n")
+
+print(
+  adf.test(log_air)
+)
+
+# ------------------------------------------------------------
+# 5. FIRST DIFFERENCE
+# ------------------------------------------------------------
+
+diff_air <- diff(log_air)
+
+plot(
+  diff_air,
+  main = "First Differenced Log AirPassengers",
+  xlab = "Year",
+  ylab = "Differenced Log(Passengers)",
+  lwd = 2
+)
+
+# ------------------------------------------------------------
+# 6. ADF TEST AFTER DIFFERENCING
+# ------------------------------------------------------------
+
+cat("\n========== ADF TEST AFTER DIFFERENCING ==========\n")
+
+print(
+  adf.test(diff_air)
+)
+
+# ------------------------------------------------------------
+# 7. ACF AND PACF
+# ------------------------------------------------------------
+
+par(mfrow = c(1,2))
+
+acf(
+  diff_air,
+  lag.max = 36,
+  main = "ACF of Differenced Series"
+)
+
+pacf(
+  diff_air,
+  lag.max = 36,
+  main = "PACF of Differenced Series"
+)
+
+par(mfrow = c(1,1))
+
+# ------------------------------------------------------------
+# 8. ARMA(1,1) MODEL
+# ------------------------------------------------------------
+
+arma_model <- arima(
+  diff_air,
+  order = c(1,0,1)
+)
+
+cat("\n========== ARMA(1,1) MODEL ==========\n")
+
+print(arma_model)
+
+# ------------------------------------------------------------
+# 9. MODEL DIAGNOSTICS
+# ------------------------------------------------------------
+
+cat("\n========== ARMA DIAGNOSTICS ==========\n")
+
+tsdiag(
+  arma_model
+)
+
+# ------------------------------------------------------------
+# 10. LJUNG-BOX TEST
+# ------------------------------------------------------------
+
+lb_test <- Box.test(
+  residuals(arma_model),
+  lag = 12,
+  type = "Ljung-Box"
+)
+
+cat("\n========== LJUNG-BOX TEST ==========\n")
+
+print(lb_test)
+
+cat(
+  "\nLjung-Box p-value =",
+  lb_test$p.value,
+  "\n"
+)
+
+# ------------------------------------------------------------
+# 11. FORECAST
+# ------------------------------------------------------------
+
+arma_forecast <- forecast(
+  arma_model,
+  h = 12
+)
+
+cat("\n========== ARMA FORECAST ==========\n")
+
+print(arma_forecast)
+
+# ------------------------------------------------------------
+# 12. FORECAST PLOT
+# ------------------------------------------------------------
+
+plot(
+  arma_forecast,
+  main = "ARMA(1,1) Forecast",
+  xlab = "Year",
+  ylab = "Differenced Log Passengers"
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SARIMA
+# ============================================================
+# PRACTICAL 3 : SARIMA MODEL
+# DATASET : AirPassengers
+# ============================================================
+
+# Install packages if required
+# install.packages("forecast")
+# install.packages("tseries")
+
+library(forecast)
+library(tseries)
+
+# ------------------------------------------------------------
+# 1. LOAD AIRPASSENGERS DATASET
+# ------------------------------------------------------------
+
+data("AirPassengers")
+
+air <- AirPassengers
+
+print(air)
+
+# ------------------------------------------------------------
+# 2. ORIGINAL DATA PLOT
+# ------------------------------------------------------------
+
+plot(
+  air,
+  main = "Original AirPassengers Data",
+  xlab = "Year",
+  ylab = "Number of Passengers",
+  lwd = 2
+)
+
+# ------------------------------------------------------------
+# 3. LOG TRANSFORMATION
+# ------------------------------------------------------------
+
+log_air <- log(air)
+
+plot(
+  log_air,
+  main = "Log Transformed AirPassengers",
+  xlab = "Year",
+  ylab = "Log(Passengers)",
+  lwd = 2
+)
+
+# ------------------------------------------------------------
+# 4. ADF TEST
+# ------------------------------------------------------------
+
+cat("\n========== ADF TEST ==========\n")
+
+print(
+  adf.test(log_air)
+)
+
+# ------------------------------------------------------------
+# 5. FIRST DIFFERENCE
+# ------------------------------------------------------------
+
+diff_air <- diff(log_air)
+
+plot(
+  diff_air,
+  main = "First Differenced Log AirPassengers",
+  xlab = "Year",
+  ylab = "Differenced Log(Passengers)",
+  lwd = 2
+)
+
+# ------------------------------------------------------------
+# 6. ADF TEST AFTER DIFFERENCING
+# ------------------------------------------------------------
+
+cat("\n========== ADF AFTER DIFFERENCING ==========\n")
+
+print(
+  adf.test(diff_air)
+)
+
+# ------------------------------------------------------------
+# 7. ACF AND PACF
+# ------------------------------------------------------------
+
+par(mfrow = c(1,2))
+
+acf(
+  diff_air,
+  lag.max = 36,
+  main = "ACF"
+)
+
+pacf(
+  diff_air,
+  lag.max = 36,
+  main = "PACF"
+)
+
+par(mfrow = c(1,1))
+
+# ------------------------------------------------------------
+# 8. AUTOMATIC SARIMA MODEL
+# ------------------------------------------------------------
+
+sarima_model <- auto.arima(
+  log_air,
+  seasonal = TRUE,
+  stepwise = FALSE,
+  approximation = FALSE
+)
+
+# ------------------------------------------------------------
+# 9. DISPLAY SARIMA MODEL
+# ------------------------------------------------------------
+
+cat("\n========== SARIMA MODEL ==========\n")
+
+print(sarima_model)
+
+summary(sarima_model)
+
+# ------------------------------------------------------------
+# 10. AIC, AICc AND BIC
+# ------------------------------------------------------------
+
+cat("\n========== MODEL CRITERIA ==========\n")
+
+cat(
+  "AIC  =",
+  AIC(sarima_model),
+  "\n"
+)
+
+cat(
+  "AICc =",
+  sarima_model$aicc,
+  "\n"
+)
+
+cat(
+  "BIC  =",
+  BIC(sarima_model),
+  "\n"
+)
+
+# ------------------------------------------------------------
+# 11. RESIDUAL DIAGNOSTICS
+# ------------------------------------------------------------
+
+cat("\n========== RESIDUAL DIAGNOSTICS ==========\n")
+
+checkresiduals(
+  sarima_model
+)
+
+# ------------------------------------------------------------
+# 12. LJUNG-BOX TEST
+# ------------------------------------------------------------
+
+lb_test <- Box.test(
+  residuals(sarima_model),
+  lag = 12,
+  type = "Ljung-Box"
+)
+
+cat("\n========== LJUNG-BOX TEST ==========\n")
+
+print(lb_test)
+
+cat(
+  "\nLjung-Box p-value =",
+  lb_test$p.value,
+  "\n"
+)
+
+# ------------------------------------------------------------
+# 13. 24-MONTH FORECAST
+# ------------------------------------------------------------
+
+sarima_forecast <- forecast(
+  sarima_model,
+  h = 24
+)
+
+cat("\n========== SARIMA FORECAST ==========\n")
+
+print(sarima_forecast)
+
+# ------------------------------------------------------------
+# 14. FORECAST PLOT
+# ------------------------------------------------------------
+
+plot(
+  sarima_forecast,
+  main = "SARIMA Forecast for AirPassengers",
+  xlab = "Year",
+  ylab = "Number of Passengers",
+  lwd = 2
+)
+
+
+MANUAL SARIMA
+# ------------------------------------------------------------
+# MANUAL SARIMA
+# ------------------------------------------------------------
+
+manual_sarima <- Arima(
+  log_air,
+  order = c(2,1,1),
+  seasonal = c(0,1,0)
+)
+
+cat("\n========== MANUAL SARIMA ==========\n")
+
+summary(manual_sarima)
+
+cat("\nAIC  =", AIC(manual_sarima))
+cat("\nAICc =", manual_sarima$aicc)
+cat("\nBIC  =", BIC(manual_sarima))
+
+checkresiduals(manual_sarima)
+
+manual_forecast <- forecast(
+  manual_sarima,
+  h = 24
+)
+
+plot(
+  manual_forecast,
+  main = "Manual SARIMA Forecast",
+  xlab = "Year",
+  ylab = "Passengers"
+)
+
+
+
+
+
+
+
+
+
+4.DIAGNOSTIC CHECKING — ARCH/GARCH
+# ============================================================
+# PRACTICAL 4 : DIAGNOSTIC CHECKING - ARCH/GARCH
+# DATASET : AirPassengers
+# ============================================================
+
+# Install packages if required
+# install.packages("rugarch")
+# install.packages("tseries")
+# install.packages("FinTS")
+
+library(rugarch)
+library(tseries)
+library(FinTS)
+
+# ------------------------------------------------------------
+# 1. LOAD AIRPASSENGERS DATASET
+# ------------------------------------------------------------
+
+data("AirPassengers")
+
+air <- AirPassengers
+
+print(air)
+
+# ------------------------------------------------------------
+# 2. ORIGINAL SERIES
+# ------------------------------------------------------------
+
+plot(
+  air,
+  main = "AirPassengers",
+  xlab = "Year",
+  ylab = "Passengers",
+  lwd = 2
+)
+
+# ------------------------------------------------------------
+# 3. LOG TRANSFORMATION
+# ------------------------------------------------------------
+
+log_air <- log(air)
+
+plot(
+  log_air,
+  main = "Log Transformed AirPassengers",
+  xlab = "Year",
+  ylab = "Log(Passengers)",
+  lwd = 2
+)
+
+# ------------------------------------------------------------
+# 4. LOG RETURNS / CHANGES
+# ------------------------------------------------------------
+
+returns <- diff(log_air) * 100
+
+print(returns)
+
+# ------------------------------------------------------------
+# 5. PLOT RETURNS
+# ------------------------------------------------------------
+
+plot(
+  returns,
+  main = "AirPassengers Log Returns",
+  xlab = "Year",
+  ylab = "Returns (%)",
+  lwd = 1
+)
+
+abline(
+  h = 0,
+  lty = 2
+)
+
+# ------------------------------------------------------------
+# 6. ADF TEST
+# ------------------------------------------------------------
+
+cat("\n========== ADF TEST ==========\n")
+
+adf_result <- adf.test(returns)
+
+print(adf_result)
+
+# ------------------------------------------------------------
+# 7. KPSS TEST
+# ------------------------------------------------------------
+
+cat("\n========== KPSS TEST ==========\n")
+
+kpss_result <- kpss.test(returns)
+
+print(kpss_result)
+
+# ------------------------------------------------------------
+# 8. ACF OF SQUARED RETURNS
+# ------------------------------------------------------------
+
+acf(
+  returns^2,
+  main = "ACF of Squared Returns"
+)
+
+# ------------------------------------------------------------
+# 9. ARCH LM TEST
+# ------------------------------------------------------------
+
+cat("\n========== ARCH LM TEST ==========\n")
+
+arch_test <- ArchTest(
+  returns,
+  lags = 12
+)
+
+print(arch_test)
+
+# ------------------------------------------------------------
+# 10. ARCH(1) MODEL
+# ------------------------------------------------------------
+
+arch_spec <- ugarchspec(
+  variance.model = list(
+    model = "sGARCH",
+    garchOrder = c(1,0)
+  ),
+  mean.model = list(
+    armaOrder = c(0,0)
+  ),
+  distribution.model = "norm"
+)
+
+fit_arch <- ugarchfit(
+  spec = arch_spec,
+  data = returns
+)
+
+cat("\n========== ARCH(1) MODEL ==========\n")
+
+show(fit_arch)
+
+# ------------------------------------------------------------
+# 11. GARCH(1,1) MODEL
+# ------------------------------------------------------------
+
+garch_spec <- ugarchspec(
+  variance.model = list(
+    model = "sGARCH",
+    garchOrder = c(1,1)
+  ),
+  mean.model = list(
+    armaOrder = c(0,0)
+  ),
+  distribution.model = "norm"
+)
+
+fit_garch <- ugarchfit(
+  spec = garch_spec,
+  data = returns
+)
+
+cat("\n========== GARCH(1,1) MODEL ==========\n")
+
+show(fit_garch)
+
+# ------------------------------------------------------------
+# 12. AIC / BIC COMPARISON
+# ------------------------------------------------------------
+
+cat("\n========== ARCH(1) INFORMATION CRITERIA ==========\n")
+
+print(
+  infocriteria(fit_arch)
+)
+
+cat("\n========== GARCH(1,1) INFORMATION CRITERIA ==========\n")
+
+print(
+  infocriteria(fit_garch)
+)
+
+# ------------------------------------------------------------
+# 13. CONDITIONAL VOLATILITY - ARCH
+# ------------------------------------------------------------
+
+plot(
+  sigma(fit_arch),
+  type = "l",
+  main = "Conditional Volatility - ARCH(1)",
+  xlab = "Time",
+  ylab = "Sigma"
+)
+
+# ------------------------------------------------------------
+# 14. CONDITIONAL VOLATILITY - GARCH
+# ------------------------------------------------------------
+
+plot(
+  sigma(fit_garch),
+  type = "l",
+  main = "Conditional Volatility - GARCH(1,1)",
+  xlab = "Time",
+  ylab = "Sigma"
+)
+
+# ------------------------------------------------------------
+# 15. STANDARDIZED RESIDUALS
+# ------------------------------------------------------------
+
+std_res_garch <- residuals(
+  fit_garch,
+  standardize = TRUE
+)
+
+plot(
+  std_res_garch,
+  type = "l",
+  main = "GARCH Standardized Residuals",
+  xlab = "Time",
+  ylab = "Standardized Residuals"
+)
+
+# ------------------------------------------------------------
+# 16. ACF OF SQUARED STANDARDIZED RESIDUALS
+# ------------------------------------------------------------
+
+acf(
+  std_res_garch^2,
+  main = "ACF of Squared Standardized Residuals"
+)
+
+# ------------------------------------------------------------
+# 17. LJUNG-BOX TEST
+# ------------------------------------------------------------
+
+diag_test <- Box.test(
+  std_res_garch^2,
+  lag = 12,
+  type = "Ljung-Box"
+)
+
+cat(
+  "\n========== LJUNG-BOX TEST ==========\n"
+)
+
+print(diag_test)
+
+cat(
+  "\nLjung-Box p-value =",
+  diag_test$p.value,
+  "\n"
+)
+
+# ------------------------------------------------------------
+# 18. GARCH VOLATILITY FORECAST
+# ------------------------------------------------------------
+
+garch_forecast <- ugarchforecast(
+  fit_garch,
+  n.ahead = 12
+)
+
+cat(
+  "\n========== GARCH VOLATILITY FORECAST ==========\n"
+)
+
+print(
+  sigma(garch_forecast)
+)
