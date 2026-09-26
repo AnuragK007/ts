@@ -1,0 +1,657 @@
+============================================================
+PRACTICAL 1 : MOVING AVERAGE SMOOTHING
+============================================================
+
+1. library(forecast)
+   Loads the forecast package, which provides time-series functions
+   such as ma() for calculating moving averages.
+
+2. data("AirPassengers")
+   Loads the built-in AirPassengers time-series dataset.
+
+3. air <- AirPassengers
+   Stores the AirPassengers dataset in the variable 'air'.
+
+4. print(air)
+   Displays the passenger values.
+
+5. plot(air, ...)
+   Plots the original AirPassengers time series.
+   X-axis = Year
+   Y-axis = Number of passengers.
+   The plot helps us observe the trend and seasonal pattern.
+
+6. MA12 <- ma(air, order = 12)
+   Calculates a 12-month moving average.
+   Since the data is monthly, 12 represents one complete year.
+   Moving average smooths short-term fluctuations and shows the
+   underlying trend.
+
+7. print(MA12)
+   Displays the calculated 12-month moving-average values.
+
+8. lines(MA12)
+   Adds the moving-average line to the original time-series plot.
+   This allows us to visually compare the original data with the
+   smoothed trend.
+
+9. CMA <- ma(air, order = 12, centre = TRUE)
+   Calculates a centered 12-month moving average.
+   The average is centered around each time point.
+   It is useful for identifying the trend while reducing seasonal
+   fluctuations.
+
+10. print(CMA)
+    Displays the centered moving-average values.
+
+11. plot(air, ...)
+    Creates a plot for the original AirPassengers data.
+
+12. lines(CMA)
+    Adds the centered moving-average line to the plot.
+
+13. seasonal_component <- air / CMA
+    Estimates the seasonal component by dividing the original
+    observations by the centered moving average.
+
+    Formula:
+    Seasonal Component = Original Data / Trend
+
+14. print(seasonal_component)
+    Displays the estimated seasonal component.
+
+15. par(mfrow = c(2,1))
+    Divides the plotting area into 2 rows and 1 column so that
+    two plots can be displayed together.
+
+16. plot(air)
+    Displays the original AirPassengers series.
+
+17. plot(CMA)
+    Displays the centered moving-average series.
+
+18. par(mfrow = c(1,1))
+    Returns the plotting area back to normal.
+
+
+============================================================
+PRACTICAL 2 : ARMA MODEL
+============================================================
+
+1. library(forecast)
+   Loads the forecast package for forecasting and time-series
+   analysis.
+
+2. library(tseries)
+   Loads the tseries package, which provides functions such as
+   adf.test().
+
+3. data("AirPassengers")
+   Loads the AirPassengers dataset.
+
+4. air <- AirPassengers
+   Stores the dataset in 'air'.
+
+5. print(air)
+   Displays the original passenger values.
+
+6. plot(air, ...)
+   Plots the original time series to observe trend and seasonality.
+
+7. log_air <- log(air)
+   Applies logarithmic transformation to the passenger data.
+
+   Purpose:
+   The AirPassengers data has increasing variation as the number
+   of passengers increases. Log transformation helps stabilize
+   the variance.
+
+8. plot(log_air, ...)
+   Displays the log-transformed series.
+
+9. adf.test(log_air)
+   Performs the Augmented Dickey-Fuller (ADF) test.
+
+   Purpose:
+   To check whether the time series is stationary.
+
+   H0 = Series is non-stationary.
+   H1 = Series is stationary.
+
+   If p-value < 0.05:
+   Reject H0 -> series is stationary.
+
+   If p-value > 0.05:
+   Fail to reject H0 -> series is non-stationary.
+
+10. diff_air <- diff(log_air)
+    Takes the first difference of the log-transformed series.
+
+    Formula:
+    diff_air(t) = log(Yt) - log(Yt-1)
+
+    This is done to remove trend and make the series stationary.
+
+11. plot(diff_air, ...)
+    Plots the differenced log series.
+
+12. adf.test(diff_air)
+    Performs the ADF test again after differencing.
+
+    If p-value < 0.05, the differenced series can be considered
+    stationary.
+
+13. par(mfrow = c(1,2))
+    Creates an area containing two plots side-by-side.
+
+14. acf(diff_air, lag.max = 36)
+    Calculates and plots the Autocorrelation Function.
+
+    ACF shows the correlation between current observations and
+    previous observations at different lags.
+
+    It helps identify the MA component.
+
+15. pacf(diff_air, lag.max = 36)
+    Calculates and plots the Partial Autocorrelation Function.
+
+    PACF shows the correlation at each lag after removing the
+    effects of intermediate lags.
+
+    It helps identify the AR component.
+
+16. par(mfrow = c(1,1))
+    Returns the plotting area to normal.
+
+17. arma_model <- arima(diff_air, order = c(1,0,1))
+    Fits an ARMA(1,1) model.
+
+    order = c(p,d,q)
+
+    p = 1 -> AR order
+    d = 0 -> no additional differencing
+    q = 1 -> MA order
+
+    Therefore:
+    ARMA(1,1) = 1 AR term + 1 MA term.
+
+18. print(arma_model)
+    Displays the estimated AR and MA coefficients,
+    standard errors, variance, AIC, etc.
+
+19. tsdiag(arma_model)
+    Performs graphical diagnostic checking of the ARMA model.
+
+    It helps check whether the residuals behave like white noise.
+
+20. residuals(arma_model)
+    Extracts the residuals/errors from the fitted ARMA model.
+
+21. Box.test(residuals(arma_model), lag = 12,
+            type = "Ljung-Box")
+    Performs the Ljung-Box test on residuals.
+
+    H0 = Residuals are independent / no autocorrelation.
+    H1 = Residuals contain autocorrelation.
+
+    If p-value > 0.05:
+    Fail to reject H0 -> residuals are approximately independent.
+
+    If p-value < 0.05:
+    Reject H0 -> significant autocorrelation remains.
+
+22. forecast(arma_model, h = 12)
+    Forecasts the next 12 time periods using the ARMA model.
+
+23. plot(arma_forecast)
+    Displays the ARMA forecast along with prediction intervals.
+
+
+============================================================
+PRACTICAL 3 : SARIMA MODEL
+============================================================
+
+1. library(forecast)
+   Loads the forecast package for SARIMA modelling and forecasting.
+
+2. library(tseries)
+   Loads time-series testing functions such as ADF test.
+
+3. data("AirPassengers")
+   Loads the AirPassengers dataset.
+
+4. air <- AirPassengers
+   Stores the dataset in 'air'.
+
+5. print(air)
+   Displays the data.
+
+6. plot(air, ...)
+   Plots the original series to observe trend and seasonality.
+
+7. log_air <- log(air)
+   Applies logarithmic transformation to stabilize variance.
+
+8. plot(log_air, ...)
+   Displays the log-transformed series.
+
+9. adf.test(log_air)
+   Performs the Augmented Dickey-Fuller test for stationarity.
+
+10. diff_air <- diff(log_air)
+    Performs first-order differencing.
+
+    Purpose:
+    To remove the non-stationary trend.
+
+11. plot(diff_air, ...)
+    Displays the differenced series.
+
+12. adf.test(diff_air)
+    Checks whether the differenced series has become stationary.
+
+13. acf(diff_air, lag.max = 36)
+    Displays the ACF to identify possible MA terms.
+
+14. pacf(diff_air, lag.max = 36)
+    Displays the PACF to identify possible AR terms.
+
+15. sarima_model <- auto.arima(
+       log_air,
+       seasonal = TRUE,
+       stepwise = FALSE,
+       approximation = FALSE
+    )
+
+    Automatically searches for a suitable ARIMA/SARIMA model.
+
+    seasonal = TRUE
+    -> Allows seasonal components.
+
+    stepwise = FALSE
+    -> Performs a more extensive model search instead of using
+       the faster stepwise procedure.
+
+    approximation = FALSE
+    -> Uses exact calculations rather than approximations.
+
+16. print(sarima_model)
+    Displays the selected SARIMA model and its parameters.
+
+17. summary(sarima_model)
+    Gives detailed information about the fitted model.
+
+18. AIC(sarima_model)
+    Calculates Akaike Information Criterion.
+
+19. sarima_model$aicc
+    Gives corrected AIC (AICc).
+
+20. BIC(sarima_model)
+    Calculates Bayesian Information Criterion.
+
+    AIC, AICc and BIC are model-selection criteria.
+    Generally, a lower value indicates a better fit when comparing
+    models fitted to the same data.
+
+21. checkresiduals(sarima_model)
+    Performs residual diagnostics.
+
+    It checks whether the residuals resemble white noise and
+    displays diagnostic plots and tests.
+
+22. Box.test(residuals(sarima_model),
+            lag = 12,
+            type = "Ljung-Box")
+    Performs the Ljung-Box test on SARIMA residuals.
+
+    H0 = No autocorrelation in residuals.
+    H1 = Autocorrelation exists.
+
+    p-value > 0.05:
+    Residuals are acceptable as approximately independent.
+
+    p-value < 0.05:
+    Significant autocorrelation remains.
+
+23. forecast(sarima_model, h = 24)
+    Forecasts the next 24 months.
+
+24. plot(sarima_forecast)
+    Displays the SARIMA forecast and prediction intervals.
+
+
+-------------------- MANUAL SARIMA --------------------
+
+25. manual_sarima <- Arima(
+       log_air,
+       order = c(2,1,1),
+       seasonal = c(0,1,0)
+    )
+
+    Manually fits a SARIMA model.
+
+    Non-seasonal order:
+    (p,d,q) = (2,1,1)
+
+    p = 2 -> AR terms
+    d = 1 -> first-order differencing
+    q = 1 -> MA term
+
+    Seasonal order:
+    (P,D,Q) = (0,1,0)
+
+    P = 0 -> no seasonal AR term
+    D = 1 -> seasonal differencing
+    Q = 0 -> no seasonal MA term
+
+    Since AirPassengers is monthly, the seasonal period is
+    generally 12 months.
+
+26. summary(manual_sarima)
+    Displays detailed information about the manually fitted model.
+
+27. AIC(manual_sarima)
+    Calculates AIC.
+
+28. manual_sarima$aicc
+    Calculates/displays AICc.
+
+29. BIC(manual_sarima)
+    Calculates BIC.
+
+30. checkresiduals(manual_sarima)
+    Checks whether the residuals are approximately white noise.
+
+31. forecast(manual_sarima, h = 24)
+    Forecasts the next 24 months using the manually selected
+    SARIMA model.
+
+32. plot(manual_forecast)
+    Displays the manual SARIMA forecast.
+
+
+============================================================
+PRACTICAL 4 : DIAGNOSTIC CHECKING - ARCH/GARCH
+============================================================
+
+1. library(rugarch)
+   Loads the rugarch package for ARCH/GARCH modelling.
+
+2. library(tseries)
+   Provides time-series functions such as ADF and KPSS tests.
+
+3. library(FinTS)
+   Provides financial/time-series tests including ArchTest().
+
+4. data("AirPassengers")
+   Loads the AirPassengers dataset.
+
+5. air <- AirPassengers
+   Stores the dataset in 'air'.
+
+6. print(air)
+   Displays the passenger values.
+
+7. plot(air, ...)
+   Plots the original AirPassengers series.
+
+8. log_air <- log(air)
+   Applies logarithmic transformation to stabilize the variance.
+
+9. plot(log_air, ...)
+   Displays the log-transformed series.
+
+10. returns <- diff(log_air) * 100
+    Calculates percentage log returns/changes.
+
+    Formula:
+    Return = [log(Yt) - log(Yt-1)] × 100
+
+    Multiplying by 100 expresses the result approximately as
+    a percentage change.
+
+11. print(returns)
+    Displays the calculated returns.
+
+12. plot(returns, ...)
+    Plots the returns over time.
+
+13. abline(h = 0, lty = 2)
+    Adds a horizontal reference line at zero.
+
+    Positive returns are above zero.
+    Negative returns are below zero.
+
+14. adf.test(returns)
+    Performs the Augmented Dickey-Fuller test.
+
+    Purpose:
+    To check whether the return series is stationary.
+
+    p-value < 0.05:
+    Evidence of stationarity.
+
+15. kpss.test(returns)
+    Performs the KPSS stationarity test.
+
+    KPSS has the opposite basic hypothesis structure:
+
+    H0 = Series is stationary.
+    H1 = Series is non-stationary.
+
+    p-value > 0.05 generally supports stationarity.
+
+16. acf(returns^2)
+    Calculates the ACF of squared returns.
+
+    Squaring removes the sign and focuses on the magnitude of
+    changes.
+
+    Significant autocorrelation in squared returns can indicate
+    volatility clustering / ARCH effects.
+
+17. ArchTest(returns, lags = 12)
+    Performs the ARCH LM test.
+
+    Purpose:
+    To test whether conditional heteroskedasticity (ARCH effect)
+    is present.
+
+    H0 = No ARCH effect.
+    H1 = ARCH effect exists.
+
+    p-value < 0.05:
+    Reject H0 -> ARCH effect is present.
+
+18. arch_spec <- ugarchspec(...)
+
+    Defines an ARCH(1) model.
+
+    garchOrder = c(1,0)
+
+    First value = ARCH order = 1
+    Second value = GARCH order = 0
+
+    Therefore:
+    ARCH(1) model.
+
+    mean.model armaOrder = c(0,0)
+    -> No AR or MA terms in the mean equation.
+
+    distribution.model = "norm"
+    -> Assumes normally distributed innovations.
+
+19. fit_arch <- ugarchfit(
+       spec = arch_spec,
+       data = returns
+    )
+
+    Fits the ARCH(1) model to the return data.
+
+20. show(fit_arch)
+    Displays the fitted ARCH model results, including estimated
+    parameters and diagnostics.
+
+21. garch_spec <- ugarchspec(...)
+
+    Defines a GARCH(1,1) model.
+
+    garchOrder = c(1,1)
+
+    ARCH order = 1
+    GARCH order = 1
+
+    Therefore:
+    GARCH(1,1).
+
+22. fit_garch <- ugarchfit(
+       spec = garch_spec,
+       data = returns
+    )
+
+    Fits the GARCH(1,1) model to the return series.
+
+23. show(fit_garch)
+    Displays the fitted GARCH(1,1) model results.
+
+24. infocriteria(fit_arch)
+    Displays information criteria for the ARCH(1) model.
+
+25. infocriteria(fit_garch)
+    Displays information criteria for the GARCH(1,1) model.
+
+    AIC/BIC and related criteria can be used to compare models
+    fitted to the same data.
+
+    Lower values generally indicate a better model according to
+    that criterion.
+
+26. sigma(fit_arch)
+    Extracts the estimated conditional volatility from the ARCH
+    model.
+
+27. plot(sigma(fit_arch), ...)
+    Plots the ARCH(1) conditional volatility over time.
+
+28. sigma(fit_garch)
+    Extracts the conditional volatility estimated by the
+    GARCH(1,1) model.
+
+29. plot(sigma(fit_garch), ...)
+    Plots the GARCH(1,1) conditional volatility.
+
+30. residuals(
+       fit_garch,
+       standardize = TRUE
+    )
+
+    Extracts standardized residuals from the GARCH model.
+
+    Standardized residual:
+    Residual / Estimated Conditional Standard Deviation
+
+    These residuals are used to check whether the GARCH model
+    has adequately captured volatility.
+
+31. plot(std_res_garch, ...)
+    Plots the standardized residuals over time.
+
+32. acf(std_res_garch^2)
+    Calculates the ACF of squared standardized residuals.
+
+    Purpose:
+    To check whether volatility dependence remains after fitting
+    the GARCH model.
+
+    Ideally, there should be little/no significant autocorrelation.
+
+33. Box.test(
+       std_res_garch^2,
+       lag = 12,
+       type = "Ljung-Box"
+    )
+
+    Performs the Ljung-Box test on squared standardized residuals.
+
+    H0 = No autocorrelation remains.
+    H1 = Autocorrelation remains.
+
+    p-value > 0.05:
+    Residual volatility dependence is not statistically significant.
+
+    p-value < 0.05:
+    Significant dependence remains, suggesting the model may not
+    have fully captured the volatility structure.
+
+34. ugarchforecast(
+       fit_garch,
+       n.ahead = 12
+    )
+
+    Forecasts conditional volatility for the next 12 periods.
+
+35. sigma(garch_forecast)
+    Extracts and displays the forecasted conditional volatility.
+
+
+============================================================
+IMPORTANT INTERPRETATION FOR EXAM
+============================================================
+
+MOVING AVERAGE:
+Purpose = Smooth the time series and identify the underlying trend.
+
+ARMA:
+Purpose = Model dependence in a stationary time series using
+          AR and MA components.
+
+SARIMA:
+Purpose = Model non-stationary time series containing trend and
+          seasonal patterns and produce forecasts.
+
+ARCH:
+Purpose = Model changing variance/volatility where past squared
+          errors affect current volatility.
+
+GARCH:
+Purpose = Model volatility using both past squared errors and
+          past conditional variance.
+
+ADF TEST:
+H0 = Non-stationary.
+p-value < 0.05 -> stationary.
+
+KPSS TEST:
+H0 = Stationary.
+p-value > 0.05 -> supports stationarity.
+
+ACF:
+Used mainly to identify MA behaviour and autocorrelation.
+
+PACF:
+Used mainly to identify AR behaviour.
+
+LJUNG-BOX:
+H0 = No autocorrelation.
+p-value > 0.05 -> residuals are approximately uncorrelated.
+
+ARCH LM TEST:
+H0 = No ARCH effect.
+p-value < 0.05 -> ARCH effect exists.
+
+AIC / AICc / BIC:
+Used for model comparison.
+Lower value generally indicates a preferable model among
+models fitted to the same data.
+
+FORECAST:
+Uses the fitted model to predict future observations.
+
+SIGMA:
+Represents estimated conditional volatility in ARCH/GARCH models.
+
+STANDARDIZED RESIDUALS:
+Residuals scaled by their estimated conditional standard deviation.
+They are used to check whether the GARCH model has adequately
+captured volatility.
