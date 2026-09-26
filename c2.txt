@@ -1,0 +1,228 @@
+MOVING AVERAGE SMOOTHING
+
+CODE:
+
+data("AirPassengers")
+
+ses_model = ses(AirPassengers)
+holt_model = holt(AirPassengers)
+hw_model = hw(AirPassengers,
+              seasonal = "multiplicative")
+
+plot(AirPassengers,
+     main = "AirPassengers: SES, Holt and Holt-Winters",
+     ylab = "Passengers",
+     xlab = "Year",
+     col = "black",
+     lwd = 1)
+
+lines(fitted(ses_model),
+      col = "blue",
+      lwd = 2)
+
+lines(fitted(holt_model),
+      col = "red",
+      lwd = 2)
+
+lines(fitted(hw_model),
+      col = "green",
+      lwd = 2)
+
+legend("topleft",
+       legend = c("Actual", "SES", "Holt", "Holt-Winters"),
+       col = c("black", "blue", "red", "green"),
+       lty = 1,
+       lwd = 2)
+
+—----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+ARIMA 
+
+CODE:
+library(forecast)
+library(tseries)
+
+data("AirPassengers")
+
+air = log(AirPassengers)
+diff_air = diff(air)
+
+plot(diff_air, main="Differenced Log AirPassengers")
+
+adf.test(diff_air)
+
+acf(diff_air, lag.max=36)
+pacf(diff_air, lag.max=36)
+
+arma_model = arima(diff_air, order=c(1,0,1))
+arma_model
+
+checkresiduals(arma_model)
+
+forecast_arma = forecast(arma_model, h=12)
+plot(forecast_arma)
+
+
+—----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SARIMA 
+
+CODE:
+library(forecast)
+library(tseries)
+
+data("AirPassengers")
+
+air = log(AirPassengers)
+
+plot(air, main="Log Transformed AirPassengers")
+
+adf.test(air)
+
+diff_air = diff(air)
+
+plot(diff_air, main="Differenced Log AirPassengers")
+
+adf.test(diff_air)
+
+acf(diff_air, lag.max=36)
+pacf(diff_air, lag.max=36)
+
+sarima_model = Arima(air,
+                     order=c(1,1,1),
+                     seasonal=c(1,1,1))
+
+sarima_model
+
+checkresiduals(sarima_model)
+
+forecast_sarima = forecast(sarima_model, h=12)
+
+plot(forecast_sarima,
+     main="SARIMA Forecast")
+
+Manual sarima : 
+library(forecast)
+library(tseries)
+
+data("AirPassengers")
+
+air = log(AirPassengers)
+
+plot(air, main="Log Transformed AirPassengers")
+
+adf.test(air)
+
+diff_air = diff(air)
+
+plot(diff_air, main="Differenced Log AirPassengers")
+
+adf.test(diff_air)
+
+acf(diff_air, lag.max=36)
+pacf(diff_air, lag.max=36)
+
+sarima_model = Arima(air,
+                     order=c(2,1,1),
+                     seasonal=c(0,1,0))
+
+sarima_model
+
+checkresiduals(sarima_model)
+
+forecast_sarima = forecast(sarima_model, h=12)
+
+plot(forecast_sarima,
+     main="SARIMA Forecast")
+
+
+
+—----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+Diagnostic checking(arch/garch)
+
+CODE:
+
+library(rugarch)
+library(FinTS)
+library(tseries)
+
+data("AirPassengers")
+
+log_air = log(AirPassengers)
+returns = diff(log_air) * 100
+
+plot(returns, main="Log Returns")
+
+adf.test(returns)
+
+acf(returns^2, main="ACF of Squared Returns")
+
+ArchTest(returns, lags=12)
+
+garch_spec = ugarchspec(
+  variance.model=list(model="sGARCH", garchOrder=c(1,1)),
+  mean.model=list(armaOrder=c(0,0)),
+  distribution.model="norm"
+)
+
+garch_model = ugarchfit(
+  spec=garch_spec,
+  data=returns
+)
+
+show(garch_model)
+
+plot(sigma(garch_model), type="l",
+     main="GARCH(1,1) Volatility")
+
+std_res = residuals(garch_model, standardize=TRUE)
+
+acf(std_res^2, main="ACF of Squared Standardized Residuals")
+
+
+
+—----------------------------------------------------------------------------------------------------------------------------
