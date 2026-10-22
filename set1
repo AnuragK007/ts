@@ -1,0 +1,56 @@
+library(forecast)
+
+data("AirPassengers")
+
+data <- AirPassengers
+
+head(data)
+summary(data)
+
+ma = filter(data,rep(1/12,12),sides=2)
+
+plot(data,main="Air PassengerS")
+lines(ma,col="red",lwd=2)
+legend("topleft",legend=c("og","ma"),
+       col=c("black","red"),lty=1)
+
+
+ses <-ses(data,h=12)
+holtm <-holt(data,h=12)
+
+hwa <- hw(data,seasonal = "additive",h=12)
+hwm <- hw(data,seasonal = "multiplicative",h=12)
+
+
+plot(data,main="air passenger")
+lines(fitted(ses),col="red",lwd=2)
+lines(fitted(holtm),col="yellow",lwd=2)
+lines(fitted(hwa),col="blue",lwd=2)
+lines(fitted(hwm),col="green",lwd=2)
+
+legend("topleft",
+       legend=c("original","SES","HOLTS","HWA","HWM"),
+       col=c("black","red","yellow","blue","green"),
+       lty=1)
+
+
+data("AirPassengers")
+
+data <- AirPassengers
+
+acf(data)
+pacf(data)
+
+dt <- residuals(lm(as.numeric(data)~time(data)))
+
+ar <- arima(dt,order=c(1,0,0))
+ma <- arima(dt,order=c(0,0,1))
+
+ar
+ma
+
+sqrt(diag(ar$var.coef))
+sqrt(diag(ma$var.coef))
+
+phi <- ar$coef["ar1"]
+abs(phi)<1
