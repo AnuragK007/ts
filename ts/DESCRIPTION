@@ -1,0 +1,7 @@
+Package: tspracticals
+Title: Time Series Analysis Practical Code
+Version: 1.0.0
+Authors@R: person("Anurag", role = c("aut", "cre"), email = "replace-with-your-email@example.com")
+Description: Copyable reference code for six sets of time series analysis practicals, including smoothing, ARIMA, seasonal modeling, model selection, forecasting, and residual diagnostics.
+License: MIT
+Encoding: UTF-8
