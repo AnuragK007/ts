@@ -1,0 +1,8 @@
+Package: mylib
+Title: Time Series Analysis Practical Codebook
+Version: 0.1.0
+Authors@R: person("Anurag", role = c("aut", "cre"), email = "you@example.com")
+Description: Help pages containing complete Time Series Analysis practical code grouped into six sets.
+License: MIT
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
