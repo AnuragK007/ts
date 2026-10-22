@@ -1,4 +1,4 @@
-Package: tspracticals
+Package: ts
 Title: Time Series Analysis Practical Code
 Version: 1.0.0
 Authors@R: person("Anurag", role = c("aut", "cre"), email = "anuragkhokale007@gmail.com")
