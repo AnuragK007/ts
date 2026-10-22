@@ -1,0 +1,8 @@
+Package: mylib
+Title: Time Series Analysis Practicals
+Version: 1.0.0
+Authors@R: person("Anurag", role = c("aut", "cre"), email = "you@example.com")
+Description: Reference material for six sets of time series analysis practicals.
+License: MIT
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
