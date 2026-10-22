@@ -1,0 +1,48 @@
+data(AirPassengers)
+x <- log(AirPassengers)
+
+# 1. Identify Seasonality
+plot(x, main="Air Passengers Seasonality")
+monthplot(x)
+
+# SARIMA(0,1,1)(0,1,1)[12]
+library(forecast)
+sarima <- Arima(x, order=c(0,1,1),
+                seasonal=c(0,1,1))
+print(sarima)
+
+# 2. Time Series Regression
+t <- 1:length(x)
+month <- factor(cycle(x))
+reg <- lm(as.numeric(x) ~ t + month)
+print(summary(reg))
+
+# Compare R-squared and RMSE
+actual <- as.numeric(x)
+sarima_fit <- as.numeric(fitted(sarima))
+reg_fit <- fitted(reg)
+
+cat("Regression R-squared:", summary(reg)$r.squared, "\n")
+cat("Regression RMSE:", sqrt(mean((actual-reg_fit)^2)), "\n")
+cat("SARIMA RMSE:", sqrt(mean((actual-sarima_fit)^2, na.rm=TRUE)), "\n")
+
+# 3. MLE and CLS Estimation
+mle <- arima(x, order=c(1,1,1), method="ML")
+cls <- arima(x, order=c(1,1,1), method="CSS")
+
+print(mle)
+print(cls)
+
+# 4. Automatic Grid Search: p=0 to 3, q=0 to 3
+results <- data.frame()
+
+for(p in 0:3) {
+  for(q in 0:3) {
+    m <- try(arima(x, order=c(p,1,q), method="ML"), silent=TRUE)
+    if(!inherits(m,"try-error"))
+      results <- rbind(results,
+                       data.frame(p=p, q=q, AIC=AIC(m)))
+  }
+}
+
+print(results[order(results$AIC),])
