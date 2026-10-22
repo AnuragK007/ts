@@ -1,4 +1,4 @@
-Package: mylib
+Package: mylib2
 Title: Time Series Analysis Practicals
 Version: 1.0.0
 Authors@R: person("Anurag", role = c("aut", "cre"), email = "you@example.com")
