@@ -1,0 +1,58 @@
+library(forecast)
+
+data(AirPassengers)
+x <- log(AirPassengers)
+
+# Fit ARIMA(2,1,2)
+fit <- Arima(x, order=c(2,1,2))
+print(fit)
+
+# Calculate t-ratios and p-values
+se <- sqrt(diag(fit$var.coef))
+t <- fit$coef / se
+p <- 2 * (1 - pnorm(abs(t)))
+
+result <- data.frame(
+  Coefficient=fit$coef,
+  T_Ratio=t,
+  P_Value=p
+)
+print(result)
+
+# Remove one AR and one MA term
+fit2 <- Arima(x, order=c(1,1,1))
+print(fit2)
+
+library(forecast)
+library(lmtest)
+
+data(AirPassengers)
+x <- log(AirPassengers)
+
+# Compare ARIMA models
+results <- data.frame()
+
+for (p in 0:3) {
+  for (q in 0:3) {
+    fit <- Arima(x, order=c(p,1,q))
+
+    results <- rbind(results, data.frame(
+      p=p, q=q,
+      AIC=AIC(fit),
+      BIC=BIC(fit)
+    ))
+  }
+}
+
+print(results)
+
+# Select model with lowest BIC
+best <- results[which.min(results$BIC), ]
+fit <- Arima(x, order=c(best$p,1,best$q))
+print(fit)
+
+# Residual analysis
+e <- residuals(fit)
+
+print(dwtest(e ~ 1))
+cpgram(e)
