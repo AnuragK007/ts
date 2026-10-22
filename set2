@@ -1,0 +1,37 @@
+data(AirPassengers)
+x <- AirPassengers
+
+# 1. ARMA(1,1)
+d <- diff(log(x))
+m <- arima(d, order=c(1,0,1))
+print(m)
+
+# Mathematical equation coefficients
+print(m$coef)
+
+# Check AR and MA roots
+ar <- polyroot(c(1, -m$coef["ar1"]))
+ma <- polyroot(c(1, m$coef["ma1"]))
+
+print(ar)
+print(ma)
+
+if(Mod(ar) > 1) print("AR is stationary")
+if(Mod(ma) > 1) print("MA is invertible")
+
+# 2. ARIMA and ADF Test
+library(tseries)
+
+adf.test(x)
+
+d <- diff(log(x))
+adf.test(d)
+
+# Fit ARIMA model
+model <- arima(log(x), order=c(1,1,1))
+print(model)
+
+# 12-month Forecast
+library(forecast)
+f <- forecast(model, h=12)
+plot(f)
